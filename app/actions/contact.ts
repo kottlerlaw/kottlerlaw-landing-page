@@ -1,7 +1,5 @@
 'use server'
 
-import nodemailer from 'nodemailer'
-
 export type ContactField = 'first' | 'last' | 'phone' | 'email' | 'message' | 'consent'
 
 export type ContactState = {
@@ -27,6 +25,29 @@ function escapeHtml(value: string) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+}
+
+// Microsoft Graph app-only token (client credentials), cached until shortly before it expires.
+let cachedToken: { value: string; expiresAt: number } | undefined
+
+async function getGraphToken(tenantId: string, clientId: string, clientSecret: string) {
+  if (cachedToken && cachedToken.expiresAt > Date.now()) return cachedToken.value
+
+  const res = await fetch(`https://login.microsoftonline.com/${encodeURIComponent(tenantId)}/oauth2/v2.0/token`, {
+    method: 'POST',
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: clientId,
+      client_secret: clientSecret,
+      scope: 'https://graph.microsoft.com/.default',
+    }),
+    signal: AbortSignal.timeout(15_000),
+  })
+  if (!res.ok) throw new Error(`Graph token ${res.status}: ${await res.text()}`)
+
+  const data = (await res.json()) as { access_token: string; expires_in: number }
+  cachedToken = { value: data.access_token, expiresAt: Date.now() + (data.expires_in - 300) * 1000 }
+  return data.access_token
 }
 
 export async function sendContactMessage(
@@ -56,18 +77,11 @@ export async function sendContactMessage(
     return { status: 'error', message: 'Please check the highlighted fields.', errors, values }
   }
 
-  const { GMAIL_USER, GMAIL_APP_PASSWORD, CONTACT_TO } = process.env
-  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-    console.error('Contact form: GMAIL_USER / GMAIL_APP_PASSWORD are not set')
+  const { MS_TENANT_ID, MS_CLIENT_ID, MS_CLIENT_SECRET, MAIL_FROM, CONTACT_TO } = process.env
+  if (!MS_TENANT_ID || !MS_CLIENT_ID || !MS_CLIENT_SECRET || !MAIL_FROM) {
+    console.error('Contact form: MS_TENANT_ID / MS_CLIENT_ID / MS_CLIENT_SECRET / MAIL_FROM are not set')
     return { status: 'error', message: GENERIC_ERROR, values }
   }
-
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
-  })
 
   const name = `${first} ${last}`
   const rows: [string, string][] = [
@@ -78,16 +92,30 @@ export async function sendContactMessage(
   const body = message || '(No details provided)'
 
   try {
-    await transporter.sendMail({
-      from: `"Kottler & Kottler Website" <${GMAIL_USER}>`,
-      to: CONTACT_TO || GMAIL_USER,
-      replyTo: email ? { name, address: email } : undefined,
-      subject: `New case consultation request from ${name}`,
-      text: `${rows.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nWhat happened:\n${body}`,
-      html: `${rows.map(([k, v]) => `<p><strong>${k}:</strong> ${escapeHtml(v)}</p>`).join('')}
+    const token = await getGraphToken(MS_TENANT_ID, MS_CLIENT_ID, MS_CLIENT_SECRET)
+    const res = await fetch(
+      `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(MAIL_FROM)}/sendMail`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            subject: `New case consultation request from ${name}`,
+            body: {
+              contentType: 'HTML',
+              content: `${rows.map(([k, v]) => `<p><strong>${k}:</strong> ${escapeHtml(v)}</p>`).join('')}
 <p><strong>What happened:</strong></p>
 <p style="white-space:pre-wrap">${escapeHtml(body)}</p>`,
-    })
+            },
+            toRecipients: [{ emailAddress: { address: CONTACT_TO || MAIL_FROM } }],
+            replyTo: email ? [{ emailAddress: { name, address: email } }] : [],
+          },
+          saveToSentItems: false,
+        }),
+        signal: AbortSignal.timeout(15_000),
+      },
+    )
+    if (!res.ok) throw new Error(`Graph sendMail ${res.status}: ${await res.text()}`)
   } catch (err) {
     console.error('Contact form: failed to send email', err)
     return { status: 'error', message: GENERIC_ERROR, values }
