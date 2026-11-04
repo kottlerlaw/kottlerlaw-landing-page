@@ -37,6 +37,34 @@ const wins = [
 // $1,000,000 results don't all show at once.
 const winSlots = [[0, 4, 8, 12], [1, 9, 5, 13], [2, 6, 10], [3, 11, 7]].map((slot) => slot.map((i) => wins[i]));
 
+// From the attorney pages on the old site (kottlerpersonalinjuryattorney.com, 2014). Doug's page only
+// lists focus areas, so his bio stays minimal until the client sends a fuller one. Shari's name is per
+// the client (now Shari Daneshrad Sabo). Her "20 years" / "last 6 years" were dated, so only the fixed
+// facts (degrees, years, memberships) are kept.
+const focusAreas = ["Car accidents", "Truck accidents", "Motorcycle accidents", "Vehicle rollovers", "Burns & explosions", "Brain & spinal cord injuries", "Wrongful death", "Dog bites"];
+
+const attorneys = [
+  {
+    name: "Douglas E. Kottler",
+    bio: "Douglas E. Kottler practices personal injury law, representing seriously injured people and their families in and around Southern California.",
+    list: { label: "Focus areas", items: focusAreas },
+  },
+  {
+    name: "Shari Daneshrad Sabo",
+    bio: "Ms. Daneshrad Sabo represents injured plaintiffs in personal injury matters, as well as employment matters such as wage and hour, discrimination and harassment. Earlier in her career she successfully represented both plaintiffs and defendants in a wide variety of cases.",
+    list: {
+      label: "Credentials",
+      items: [
+        "Licensed in California and the U.S. District Court, Central, Northern and Eastern Districts of California",
+        "Member, Consumer Attorneys Association of Los Angeles",
+        "Member, Beverly Hills Bar Association",
+        "J.D., Loyola Law School, 1993",
+        "B.S. in Psychology, UCLA, 1989",
+      ],
+    },
+  },
+];
+
 const reasons = [
   { t: "Dedicated", d: "We are not afraid to fight on behalf of our clients. Our winning attitude and unfailing dedication gives our clients an advantage right from the start, every time." },
   { t: "Experienced", d: "Serving California since 1968. Our experienced attorneys will advocate for your maximum recovery." },
@@ -197,8 +225,8 @@ export default function Home() {
             <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-[#101c32]">
               <Image src={officePhoto} alt="Conference room at the Kottler & Kottler office overlooking Los Angeles" fill placeholder="blur" sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
               <div className="absolute bottom-0 left-0 bg-[#d9a441] px-7 py-5 text-[#101c32]">
-                <p className="font-serif text-5xl leading-none">1968</p>
                 <p className="text-lg font-bold">Serving Southern California</p>
+                <p className="mt-2 font-serif text-5xl leading-none">1968</p>
               </div>
             </div>
             <div>
@@ -208,12 +236,41 @@ export default function Home() {
                 Kottler &amp; Kottler is a family-owned and operated personal injury firm that has always limited its practice to representing seriously injured people and their families in and around Southern California. Because we carefully select our cases, you get one-on-one communication with the same attorney, every step of the way.
               </p>
               <p className="v2-body mt-5">
-                Attorneys Donald Kottler, Douglas E. Kottler and Shari S. Daneshrad are well respected in legal circles, and the Kottlers have appeared on national programs such as &ldquo;The Today Show.&rdquo; Most of our clients are repeat clients or referrals from other clients, and we prepare every case to its maximum potential.
+                Attorneys Douglas E. Kottler and Shari Daneshrad Sabo are well respected in legal circles, and the Kottlers have appeared on national programs such as &ldquo;The Today Show.&rdquo; Most of our clients are repeat clients or referrals from other clients, and we prepare every case to its maximum potential.
               </p>
               <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                 <a href="#contact" className="v2-btn v2-btn-navy tracking-wide whitespace-nowrap uppercase sm:grow">Free case consultation</a>
                 <a href={phoneHref} className="v2-btn border-2 border-[#14213a] whitespace-nowrap sm:grow"><PhoneIcon /> {phoneDisplay}</a>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ATTORNEYS */}
+        <section id="attorneys" className="scroll-mt-24 bg-[#f6f2e9] py-20 lg:py-28">
+          <div className="v2-wrap">
+            <p className="v2-eyebrow">Our attorneys</p>
+            <h2 className="v2-h2 mt-4 max-w-3xl">The attorneys on your case.</h2>
+            <p className="v2-body mt-6 max-w-3xl">
+              Because we carefully select our cases, you get one-on-one communication with the same attorney, every step of the way.
+            </p>
+            <div className="mt-12 grid gap-5 lg:grid-cols-2">
+              {attorneys.map((a) => (
+                <article key={a.name} className="flex flex-col rounded-sm border-t-4 border-[#d9a441] bg-white p-7 shadow-sm lg:p-8">
+                  <h3 className="font-serif text-[2rem] leading-tight">{a.name}</h3>
+                  <p className="mt-2 text-sm font-bold tracking-[0.12em] text-[#2b3750]/80 uppercase">Attorney at law</p>
+                  <p className="mt-5 text-[1.1rem] leading-[1.65] text-[#2b3750]">{a.bio}</p>
+                  <h4 className="mt-6 border-t border-[#14213a]/15 pt-5 text-base font-bold tracking-wide uppercase">{a.list.label}</h4>
+                  <ul className="mt-3 space-y-2 text-base leading-snug text-[#2b3750]">
+                    {a.list.items.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span aria-hidden="true" className="mt-[0.45em] size-1.5 shrink-0 rounded-full bg-[#d9a441]" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
             </div>
           </div>
         </section>
