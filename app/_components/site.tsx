@@ -3,6 +3,7 @@ export const phoneHref = "tel:8883002266";
 
 export const nav: [string, string][] = [
   ["#about", "About Us"],
+  ["#attorneys", "Attorneys"],
   ["#practice", "Personal Injury"],
   ["#results", "Results"],
   ["#contact", "Contact Us"],
