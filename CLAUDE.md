@@ -2,7 +2,7 @@
 
 # Kottler & Kottler landing page
 
-Single-page marketing site for a Southern California personal injury law firm. The case review form emails inquiries through Gmail SMTP. See `README.md` for setup and environment variables.
+Single-page marketing site for a Southern California personal injury law firm. The case review form emails inquiries through Microsoft 365 (Microsoft Graph `sendMail`, app-only auth). See `README.md` for setup and environment variables.
 
 ## Commands
 
@@ -30,7 +30,7 @@ Single-page marketing site for a Southern California personal injury law firm. T
 
 ## Contact form
 
-- `app/actions/contact.ts` is the only server code. It validates every field server-side, uses a honeypot field (`company`), escapes HTML in the email body, and never exposes SMTP errors to visitors.
+- `app/actions/contact.ts` is the only server code. It validates every field server-side, uses a honeypot field (`company`), escapes HTML in the email body, and never exposes mail-sending errors to visitors.
 - Submitting the form sends a real email to the firm's inbox. Only do it when the user asks for an end-to-end test.
 
 ## Git

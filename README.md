@@ -1,6 +1,6 @@
 # Kottler & Kottler
 
-Landing page for Kottler & Kottler, a boutique, family-owned personal injury law firm in Los Angeles serving Southern California since 1968. It is a single page with a case consultation form that emails each inquiry to the firm through Gmail SMTP.
+Landing page for Kottler & Kottler, a boutique, family-owned personal injury law firm in Los Angeles serving Southern California since 1968. It is a single page with a case consultation form that emails each inquiry to the firm through Microsoft 365 (Outlook), using the Microsoft Graph API.
 
 ## Design and content sources
 
@@ -26,7 +26,7 @@ The previous site also has material that would need new sections: attorney crede
 
 - [Next.js 16](https://nextjs.org) (App Router, Cache Components) with React 19
 - [Tailwind CSS 4](https://tailwindcss.com)
-- [Nodemailer](https://nodemailer.com) over Gmail SMTP
+- [Microsoft Graph](https://learn.microsoft.com/graph/api/user-sendmail) `sendMail` for the contact form, called with `fetch` (no SDK)
 - [Bun](https://bun.sh) as the package manager and script runner
 
 ## Getting started
@@ -45,15 +45,25 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `GMAIL_USER` | Yes | Gmail address that sends the inquiry emails. |
-| `GMAIL_APP_PASSWORD` | Yes | 16-character Google App Password for that account. Your regular Gmail password will not work. |
-| `CONTACT_TO` | No | Inbox that receives inquiries. Defaults to `GMAIL_USER`. |
+| `MS_TENANT_ID` | Yes | Directory (tenant) ID of the firm's Microsoft 365 organization. |
+| `MS_CLIENT_ID` | Yes | Application (client) ID of the app registration that sends the emails. |
+| `MS_CLIENT_SECRET` | Yes | Client secret **value** for that app registration (not the secret ID). |
+| `MAIL_FROM` | Yes | Microsoft 365 mailbox the emails are sent from, e.g. `website@kottlerlaw.com`. |
+| `CONTACT_TO` | No | Inbox that receives inquiries. Separate several addresses with commas. Defaults to `MAIL_FROM`. |
 
-To create an App Password:
+A Microsoft 365 admin sets up the app registration once:
 
-1. Turn on [2-Step Verification](https://myaccount.google.com/signinoptions/two-step-verification) for the Gmail account.
-2. Go to [App Passwords](https://myaccount.google.com/apppasswords) and create one.
-3. Paste it into `GMAIL_APP_PASSWORD`, without spaces.
+1. In the [Microsoft Entra admin center](https://entra.microsoft.com), go to **App registrations > New registration**. Name it (e.g. "Kottler website"), single tenant, no redirect URI.
+2. On the app's **Overview** page, copy the **Application (client) ID** (`MS_CLIENT_ID`) and **Directory (tenant) ID** (`MS_TENANT_ID`).
+3. Under **API permissions > Add a permission > Microsoft Graph > Application permissions**, add `Mail.Send`, then click **Grant admin consent**.
+4. Under **Certificates & secrets > New client secret**, create a secret and copy its **Value** right away (`MS_CLIENT_SECRET`). It is shown only once. Note the expiry date: the form stops sending when the secret expires, so set a reminder to rotate it.
+5. Limit the app to the sending mailbox. Without this, `Mail.Send` lets it send as any mailbox in the organization. In Exchange Online PowerShell:
+
+   ```powershell
+   New-ApplicationAccessPolicy -AppId <MS_CLIENT_ID> -PolicyScopeGroupId website@kottlerlaw.com -AccessRight RestrictAccess -Description "Kottler website contact form"
+   ```
+
+   Microsoft's newer alternative is [RBAC for Applications in Exchange Online](https://learn.microsoft.com/exchange/permissions-exo/application-rbac).
 
 `.env.local` is gitignored. Never commit real credentials.
 
@@ -98,10 +108,10 @@ The page has two copies of the case consultation form, one in the hero and one i
 - validates first name, last name, phone, optional email, message, and the consent checkbox on the server;
 - returns field-level errors and keeps what the visitor entered when something goes wrong;
 - silently drops submissions that fill the hidden honeypot field (`company`);
-- sends the inquiry from `GMAIL_USER` to `CONTACT_TO`, with Reply-To set to the visitor's email so staff can answer by replying.
+- sends the inquiry from `MAIL_FROM` to `CONTACT_TO` through Microsoft Graph, with Reply-To set to the visitor's email so staff can answer by replying.
 
-If the Gmail credentials are missing or sending fails, the visitor is asked to call the firm and the error is logged on the server.
+If the Microsoft 365 credentials are missing or sending fails, the visitor is asked to call the firm and the error is logged on the server.
 
 ## Deployment
 
-Any host that runs Next.js works, for example Vercel or a Node server running `bun run build && bun run start`. Set the environment variables above in the hosting provider's settings. The host must allow outbound SMTP connections to `smtp.gmail.com:465`.
+Any host that runs Next.js works, for example Vercel or a Node server running `bun run build && bun run start`. Set the environment variables above in the hosting provider's settings. The host must allow outbound HTTPS to `login.microsoftonline.com` and `graph.microsoft.com`.
