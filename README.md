@@ -49,7 +49,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `MS_CLIENT_ID` | Yes | Application (client) ID of the app registration that sends the emails. |
 | `MS_CLIENT_SECRET` | Yes | Client secret **value** for that app registration (not the secret ID). |
 | `MAIL_FROM` | Yes | Microsoft 365 mailbox the emails are sent from, e.g. `website@kottlerlaw.com`. |
-| `CONTACT_TO` | No | Inbox that receives inquiries. Defaults to `MAIL_FROM`. |
+| `CONTACT_TO` | No | Inbox that receives inquiries. Separate several addresses with commas. Defaults to `MAIL_FROM`. |
 
 A Microsoft 365 admin sets up the app registration once:
 

@@ -9,7 +9,9 @@ export type ContactState = {
   values?: Partial<Record<Exclude<ContactField, 'consent'>, string>>
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Same rule browsers use for <input type="email">, plus a dot in the domain.
+const EMAIL_RE =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/
 const PHONE_RE = /^[0-9+().\-\s]{7,25}$/
 const GENERIC_ERROR = 'Something went wrong sending your request. Please call us at 888-300-2266.'
 
@@ -30,7 +32,9 @@ function escapeHtml(value: string) {
 // Microsoft Graph app-only token (client credentials), cached until shortly before it expires.
 let cachedToken: { value: string; expiresAt: number } | undefined
 
-async function getGraphToken(tenantId: string, clientId: string, clientSecret: string) {
+type GraphCredentials = { tenantId: string; clientId: string; clientSecret: string }
+
+async function getGraphToken({ tenantId, clientId, clientSecret }: GraphCredentials) {
   if (cachedToken && cachedToken.expiresAt > Date.now()) return cachedToken.value
 
   const res = await fetch(`https://login.microsoftonline.com/${encodeURIComponent(tenantId)}/oauth2/v2.0/token`, {
@@ -48,6 +52,31 @@ async function getGraphToken(tenantId: string, clientId: string, clientSecret: s
   const data = (await res.json()) as { access_token: string; expires_in: number }
   cachedToken = { value: data.access_token, expiresAt: Date.now() + (data.expires_in - 300) * 1000 }
   return data.access_token
+}
+
+type GraphMessage = {
+  subject: string
+  body: { contentType: 'HTML'; content: string }
+  toRecipients: { emailAddress: { address: string } }[]
+  replyTo: { emailAddress: { name: string; address: string } }[]
+}
+
+// Sends through Graph. A 401 means the cached token was revoked (e.g. secret rotated),
+// so drop it and retry once with a fresh one.
+async function graphSendMail(creds: GraphCredentials, from: string, message: GraphMessage) {
+  const post = async () =>
+    fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(from)}/sendMail`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${await getGraphToken(creds)}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, saveToSentItems: false }),
+      signal: AbortSignal.timeout(15_000),
+    })
+
+  const res = await post()
+  if (res.status !== 401) return res
+  await res.body?.cancel()
+  cachedToken = undefined
+  return post()
 }
 
 export async function sendContactMessage(
@@ -91,30 +120,29 @@ export async function sendContactMessage(
   ]
   const body = message || '(No details provided)'
 
-  try {
-    const token = await getGraphToken(MS_TENANT_ID, MS_CLIENT_ID, MS_CLIENT_SECRET)
-    const res = await fetch(
-      `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(MAIL_FROM)}/sendMail`,
-      {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: {
-            subject: `New case consultation request from ${name}`,
-            body: {
-              contentType: 'HTML',
-              content: `${rows.map(([k, v]) => `<p><strong>${k}:</strong> ${escapeHtml(v)}</p>`).join('')}
+  const creds = { tenantId: MS_TENANT_ID, clientId: MS_CLIENT_ID, clientSecret: MS_CLIENT_SECRET }
+  // CONTACT_TO may list several inboxes, separated by commas.
+  const recipients = (CONTACT_TO || MAIL_FROM).split(',').map((s) => s.trim()).filter(Boolean)
+  const mail: GraphMessage = {
+    subject: `New case consultation request from ${name}`,
+    body: {
+      contentType: 'HTML',
+      content: `${rows.map(([k, v]) => `<p><strong>${k}:</strong> ${escapeHtml(v)}</p>`).join('')}
 <p><strong>What happened:</strong></p>
 <p style="white-space:pre-wrap">${escapeHtml(body)}</p>`,
-            },
-            toRecipients: [{ emailAddress: { address: CONTACT_TO || MAIL_FROM } }],
-            replyTo: email ? [{ emailAddress: { name, address: email } }] : [],
-          },
-          saveToSentItems: false,
-        }),
-        signal: AbortSignal.timeout(15_000),
-      },
-    )
+    },
+    toRecipients: recipients.map((address) => ({ emailAddress: { address } })),
+    replyTo: email ? [{ emailAddress: { name, address: email } }] : [],
+  }
+
+  try {
+    let res = await graphSendMail(creds, MAIL_FROM, mail)
+    // Graph can reject a visitor address our regex accepted. Don't lose the lead over it:
+    // send again without Reply-To (the address is still in the body).
+    if (res.status === 400 && mail.replyTo.length) {
+      console.warn(`Contact form: Graph rejected the message, retrying without Reply-To: ${await res.text()}`)
+      res = await graphSendMail(creds, MAIL_FROM, { ...mail, replyTo: [] })
+    }
     if (!res.ok) throw new Error(`Graph sendMail ${res.status}: ${await res.text()}`)
   } catch (err) {
     console.error('Contact form: failed to send email', err)
