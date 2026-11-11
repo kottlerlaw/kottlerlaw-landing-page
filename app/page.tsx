@@ -224,8 +224,8 @@ export default function Home() {
           <div className="v2-wrap grid items-center gap-14 lg:grid-cols-2">
             <div className="relative aspect-[4/3] overflow-hidden rounded-sm bg-[#101c32]">
               <Image src={officePhoto} alt="Conference room at the Kottler & Kottler office overlooking Los Angeles" fill placeholder="blur" sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
-              <div className="absolute bottom-0 left-0 bg-[#d9a441] px-7 py-5 text-[#101c32]">
-                <p className="text-lg font-bold">Serving Southern California</p>
+              <div className="absolute bottom-0 left-0 bg-[#d9a441] px-5 py-4 text-[#101c32] sm:px-7 sm:py-5">
+                <p className="text-base font-bold sm:text-lg">Serving Southern California since</p>
                 <p className="mt-2 font-serif text-5xl leading-none">1968</p>
               </div>
             </div>
