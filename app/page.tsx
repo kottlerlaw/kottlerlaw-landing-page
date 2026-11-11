@@ -44,10 +44,10 @@ const reasons = [
   { t: "Trusted", d: "Most of our clients are repeat customers or are referrals from other clients." },
 ];
 
-// Verbatim from the firm's Google and Yelp listings (Oct 2026). "…" marks trimmed text.
+// Verbatim from the firm's Google and Yelp listings (ratings checked Nov 2026). "…" marks trimmed text.
 const reviewSources = [
   { name: "Google", rating: "4.2", count: 42, href: "https://www.google.com/maps/search/Kottler+%26+Kottler+6420+Wilshire+Blvd+Los+Angeles" },
-  { name: "Yelp", rating: "4.5", count: 71, href: "https://www.yelp.com/search?find_desc=Kottler+%26+Kottler&find_loc=Los+Angeles%2C+CA" },
+  { name: "Yelp", rating: "4.6", count: 77, href: "https://www.yelp.com/biz/kottler-and-kottler-los-angeles" },
 ];
 
 const reviews = [
