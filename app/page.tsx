@@ -1,7 +1,6 @@
 import Image from "next/image";
-import { cacheLife } from "next/cache";
+import Link from "next/link";
 import cityPhoto from "@/app/assets/la-building.jpg";
-import logo from "@/app/assets/kottler-logo.png";
 import aaajLogo from "@/app/assets/membership-aaaj.jpg";
 import caalaLogo from "@/app/assets/membership-caala.png";
 import bbbLogo from "@/app/assets/membership-bbb.png";
@@ -14,6 +13,8 @@ import truckAccidentPhoto from "@/app/assets/practice-truck-accident.jpg";
 import wrongfulDeathPhoto from "@/app/assets/practice-wrongful-death.jpg";
 import { LeadForm } from "./_components/LeadForm";
 import { SiteHeader } from "./_components/SiteHeader";
+import { SiteFooter, SiteTopBar } from "./_components/SiteFooter";
+import { attorneys } from "./_components/attorneys";
 import { phoneDisplay, phoneHref, PhoneIcon } from "./_components/site";
 
 const wins = [
@@ -36,34 +37,6 @@ const wins = [
 // Four slots, each fading through its share of results (see .v2-flash in globals.css). Grouped so the
 // $1,000,000 results don't all show at once.
 const winSlots = [[0, 4, 8, 12], [1, 9, 5, 13], [2, 6, 10], [3, 11, 7]].map((slot) => slot.map((i) => wins[i]));
-
-// From the attorney pages on the old site (kottlerpersonalinjuryattorney.com, 2014). Doug's page only
-// lists focus areas, so his bio stays minimal until the client sends a fuller one. Shari's name is per
-// the client (now Shari Daneshrad Sabo). Her "20 years" / "last 6 years" were dated, so only the fixed
-// facts (degrees, years, memberships) are kept.
-const focusAreas = ["Car accidents", "Truck accidents", "Motorcycle accidents", "Vehicle rollovers", "Burns & explosions", "Brain & spinal cord injuries", "Wrongful death", "Dog bites"];
-
-const attorneys = [
-  {
-    name: "Douglas E. Kottler",
-    bio: "Douglas E. Kottler practices personal injury law, representing seriously injured people and their families in and around Southern California.",
-    list: { label: "Focus areas", items: focusAreas },
-  },
-  {
-    name: "Shari Daneshrad Sabo",
-    bio: "Ms. Daneshrad Sabo represents injured plaintiffs in personal injury matters, as well as employment matters such as wage and hour, discrimination and harassment. Earlier in her career she successfully represented both plaintiffs and defendants in a wide variety of cases.",
-    list: {
-      label: "Credentials",
-      items: [
-        "Licensed in California and the U.S. District Court, Central, Northern and Eastern Districts of California",
-        "Member, Consumer Attorneys Association of Los Angeles",
-        "Member, Beverly Hills Bar Association",
-        "J.D., Loyola Law School, 1993",
-        "B.S. in Psychology, UCLA, 1989",
-      ],
-    },
-  },
-];
 
 const reasons = [
   { t: "Dedicated", d: "We are not afraid to fight on behalf of our clients. Our winning attitude and unfailing dedication gives our clients an advantage right from the start, every time." },
@@ -133,18 +106,10 @@ const perks = [
   "Free initial consultation",
 ];
 
-async function CurrentYear() {
-  "use cache";
-  cacheLife("days");
-  return new Date().getFullYear();
-}
-
 export default function Home() {
   return (
     <div className="v2 min-h-screen bg-white pb-20 text-[#14213a] md:pb-0">
-      <div className="hidden bg-[#d9a441] py-2 text-center text-base font-bold text-[#101c32] md:block">
-        No fee unless we win · Free consultation · Available 24/7 · Habla Español
-      </div>
+      <SiteTopBar />
 
       <SiteHeader />
 
@@ -236,12 +201,15 @@ export default function Home() {
                 Kottler &amp; Kottler is a family-owned and operated personal injury firm that has always limited its practice to representing seriously injured people and their families in and around Southern California. Because we carefully select our cases, you get one-on-one communication with the same attorney, every step of the way.
               </p>
               <p className="v2-body mt-5">
-                Attorneys Douglas E. Kottler and Shari Daneshrad Sabo are well respected in legal circles, and the Kottlers have appeared on national programs such as &ldquo;The Today Show.&rdquo; Most of our clients are repeat clients or referrals from other clients, and we prepare every case to its maximum potential.
+                Attorneys Douglas E. Kottler and Shari S. Daneshrad are well respected in legal circles, and the Kottlers have appeared on national programs such as &ldquo;The Today Show.&rdquo; Most of our clients are repeat clients or referrals from other clients, and we prepare every case to its maximum potential.
               </p>
               <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                 <a href="#contact" className="v2-btn v2-btn-navy tracking-wide whitespace-nowrap uppercase sm:grow">Free case consultation</a>
                 <a href={phoneHref} className="v2-btn border-2 border-[#14213a] whitespace-nowrap sm:grow"><PhoneIcon /> {phoneDisplay}</a>
               </div>
+              <Link href="/about" className="mt-7 inline-flex min-h-11 items-center gap-2 text-lg font-bold underline decoration-[#d9a441] decoration-2 underline-offset-6 transition hover:decoration-[#14213a]">
+                Learn more about our firm <span aria-hidden="true">→</span>
+              </Link>
             </div>
           </div>
         </section>
@@ -254,23 +222,29 @@ export default function Home() {
             <p className="v2-body mt-6 max-w-3xl">
               Because we carefully select our cases, you get one-on-one communication with the same attorney, every step of the way.
             </p>
-            <div className="mt-12 grid gap-5 lg:grid-cols-2">
+            <div className="mt-12 grid gap-5 lg:grid-cols-3">
               {attorneys.map((a) => (
-                <article key={a.name} className="flex flex-col rounded-sm border-t-4 border-[#d9a441] bg-white p-7 shadow-sm lg:p-8">
+                <article key={a.slug} className="flex flex-col rounded-sm border-t-4 border-[#d9a441] bg-white p-7 shadow-sm lg:p-8">
                   <h3 className="font-serif text-[2rem] leading-tight">{a.name}</h3>
                   <p className="mt-2 text-sm font-bold tracking-[0.12em] text-[#2b3750]/80 uppercase">Attorney at law</p>
-                  <p className="mt-5 text-[1.1rem] leading-[1.65] text-[#2b3750]">{a.bio}</p>
-                  <h4 className="mt-6 border-t border-[#14213a]/15 pt-5 text-base font-bold tracking-wide uppercase">{a.list.label}</h4>
+                  <p className="mt-5 text-[1.1rem] leading-[1.65] text-[#2b3750]">{a.summary}</p>
+                  <h4 className="mt-6 border-t border-[#14213a]/15 pt-5 text-base font-bold tracking-wide uppercase">Education</h4>
                   <ul className="mt-3 space-y-2 text-base leading-snug text-[#2b3750]">
-                    {a.list.items.map((item) => (
+                    {a.education.map((item) => (
                       <li key={item} className="flex gap-3">
                         <span aria-hidden="true" className="mt-[0.45em] size-1.5 shrink-0 rounded-full bg-[#d9a441]" />
                         {item}
                       </li>
                     ))}
                   </ul>
+                  <Link href={`/about#${a.slug}`} className="mt-auto inline-flex min-h-11 items-center gap-2 pt-6 text-lg font-bold text-[#14213a] underline decoration-[#d9a441] decoration-2 underline-offset-6 transition hover:decoration-[#14213a]">
+                    Read full bio<span className="sr-only"> of {a.name}</span> <span aria-hidden="true">→</span>
+                  </Link>
                 </article>
               ))}
+            </div>
+            <div className="mt-12 flex justify-center">
+              <Link href="/about" className="v2-btn v2-btn-navy tracking-wide uppercase">Click here to learn more about us</Link>
             </div>
           </div>
         </section>
@@ -444,22 +418,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="bg-[#0a1425] py-12 text-white">
-        <div className="v2-wrap flex flex-col justify-between gap-8 md:flex-row md:items-end">
-          <div>
-            <Image src={logo} alt="Kottler & Kottler Attorneys at Law" className="h-20 w-auto brightness-0 invert" />
-            <p className="mt-5 text-lg leading-relaxed text-white/85">6420 Wilshire Boulevard, Penthouse<br />Los Angeles, CA 90048-5562<br />Fax: 213-387-2889</p>
-          </div>
-          <div className="md:text-right">
-            <a href={phoneHref} className="font-serif text-3xl text-[#f0cf86]">{phoneDisplay}</a>
-            <p className="mt-4 text-base text-white/75">© <CurrentYear /> Kottler &amp; Kottler. Attorney advertising. Prior results do not guarantee a similar outcome.</p>
-          </div>
-        </div>
-      </footer>
-
-      <a href={phoneHref} className="fixed right-0 bottom-0 left-0 z-50 flex min-h-[4.5rem] items-center justify-center gap-3 bg-[#d9a441] text-xl font-extrabold text-[#101c32] md:hidden">
-        <PhoneIcon /> Click to call · Free consultation
-      </a>
+      <SiteFooter />
     </div>
   );
 }
