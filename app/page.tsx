@@ -52,11 +52,6 @@ const reviewSources = [
 
 const reviews = [
   {
-    name: "Naz N.",
-    source: "Yelp",
-    text: "From the very beginning, Cathy was incredibly helpful, compassionate, and attentive throughout the entire process. She always kept us informed and was available whenever we had questions. … We are extremely happy with the outcome of my mother's case, especially the settlement and the excellent job they did negotiating the medical liens.",
-  },
-  {
     name: "James S.",
     source: "Google",
     text: "This law firm was handling a claim for my estranged father. He unfortunately passed away during the process and this firm hired a PI who tracked me down. … For a firm to do this for a smaller payout speaks volumes about their integrity.",
@@ -67,9 +62,9 @@ const reviews = [
     text: "Attorney Douglas Kottler also checked in with me personally from time to time, which gave me confidence that my case and well-being truly mattered to them. … I found them to be honest, knowledgeable, dedicated, and truly committed to helping people in need.",
   },
   {
-    name: "Stephanie V.",
+    name: "Srdana B.",
     source: "Google",
-    text: "Last year I was hit while at a stop and knew that K&K was who I needed to reach out to, even with me now living in AZ. I worked with Cathy Gomez & team, they were absolutely incredible to work with. Very responsive to emails, calls and always kind and professional.",
+    text: "I had an amazing experience working with Kottler & Kottler after my car accident. Their team was professional, efficient, and truly supportive throughout the entire process. They made a stressful situation much easier and always made me feel like I was in good hands.",
   },
   {
     name: "Roger T.",
@@ -77,9 +72,14 @@ const reviews = [
     text: "I was able to seek treatment for my medical needs without any anxiety. Throughout the process I felt that Kottler and Kottler had my best interest. … It's a relief to know you are in good hands. I had a team of attorneys on my side.",
   },
   {
-    name: "Jessica M.",
-    source: "Google",
-    text: "So satisfied with Kottler and Kottler! They took on my case November 2024, Cathy Gomez was on top of it! Always communicating with me via phone and email! Let me know all the details and talked me through everything, answered all my questions.",
+    name: "Joseph I.",
+    source: "Yelp",
+    text: "I have been a returning client to the Kottler & Kottler firm for years; needless to say, I have been beyond satisfied with the outcome and more impressed with the professional staff. This is a group of the kindest, most helpful people you will ever meet in this business. … Go ahead, make your first phone call.",
+  },
+  {
+    name: "David L.",
+    source: "Yelp",
+    text: "For an unfortunate situation Kottler and Kottler law office made everything so easy and made everything right. They're extremely professional and extremely great to work with. Thank you all for the grade A treatment.",
   },
 ];
 
