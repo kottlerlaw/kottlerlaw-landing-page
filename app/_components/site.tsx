@@ -4,7 +4,6 @@ export const phoneHref = "tel:8883002266";
 // Absolute paths so the links also work from /about.
 export const nav: [string, string][] = [
   ["/about", "About Us"],
-  ["/#attorneys", "Attorneys"],
   ["/#practice", "Personal Injury"],
   ["/#results", "Results"],
   ["/#contact", "Contact Us"],

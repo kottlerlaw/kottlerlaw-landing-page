@@ -74,3 +74,6 @@ export const attorneys: Attorney[] = [
     memberships: [],
   },
 ];
+
+/** Names and anchors only, for the header's About Us menu (keeps the bios out of the client bundle). */
+export const attorneyNav = attorneys.map(({ slug, name }) => ({ slug, name }));
