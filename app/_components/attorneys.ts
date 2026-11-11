@@ -28,7 +28,7 @@ export const attorneys: Attorney[] = [
       "Known for her tenacity, dedication, and unwavering commitment to achieving justice, Ms. Daneshrad approaches every case with both determination and compassion. She understands the physical, emotional, and financial toll that serious injuries can take on individuals and their families. Her clients benefit not only from her extensive legal experience and aggressive advocacy, but also from her genuine concern for their well-being and her commitment to guiding them through some of the most difficult times in their lives.",
       "Having represented both plaintiffs and defendants throughout her career, Ms. Daneshrad brings a unique perspective and strategic advantage to every case she handles.",
     ],
-    education: ["J.D., Loyola Law School, 1993", "B.S. in Psychology, UCLA, 1989"],
+    education: ["J.D., Loyola Law School, 1993", "B.S. in Psychology, University of California, Los Angeles, 1989"],
     admissions: [
       "State of California",
       "U.S. District Courts for the Central, Northern and Eastern Districts of California",
@@ -41,7 +41,7 @@ export const attorneys: Attorney[] = [
     initials: "DK",
     highlight: "More than 35 years representing injured people",
     summary:
-      "For more than 35 years, Mr. Kottler has dedicated his career exclusively to representing injured people, and every client has his personal cell phone number.",
+      "With more than 35 years of experience, Douglas Kottler represented injured individuals and built a reputation for taking on insurance companies and refusing to back down until he has achieved the best possible result for his clients.",
     bio: [
       "For more than 35 years, Douglas Kottler has dedicated his legal career exclusively to representing individuals who have suffered injuries due to the negligence of others. A fierce and relentless advocate, Mr. Kottler has built a reputation for taking on insurance companies and refusing to back down until he has achieved the best possible result for his clients.",
       "Known for his tenacity, unwavering determination, and aggressive approach to litigation, Mr. Kottler is a formidable opponent who is respected by his peers and adversaries alike. Insurance companies know that he is not intimidated by their tactics and that he will fight tirelessly to maximize the value of every case he handles.",

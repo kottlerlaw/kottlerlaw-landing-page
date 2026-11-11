@@ -244,7 +244,7 @@ export default function Home() {
               ))}
             </div>
             <div className="mt-12 flex justify-center">
-              <Link href="/about" className="v2-btn v2-btn-navy tracking-wide uppercase">Click here to learn more about us</Link>
+              <Link href="/about" className="v2-btn v2-btn-navy tracking-wide uppercase">Click here to learn more</Link>
             </div>
           </div>
         </section>
