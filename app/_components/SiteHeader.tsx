@@ -13,7 +13,7 @@ const linkClass =
 
 function ChevronIcon({ open }: { open: boolean }) {
   return (
-    <svg viewBox="0 0 20 20" width={18} height={18} fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden="true" className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+    <svg viewBox="0 0 20 20" width={18} height={18} fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden="true" className={`transition-transform duration-200 motion-reduce:transition-none group-hover:rotate-180 ${open ? "rotate-180" : ""}`}>
       <path d="m5 7.5 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -65,7 +65,10 @@ function AboutMenu({ label, attorneys }: { label: string; attorneys: AttorneyLin
         <ChevronIcon open={open} />
       </button>
       {/* pt-3 bridges the gap so the menu stays open while the pointer moves down to it. */}
-      <div id="about-menu" className={`absolute top-full left-0 z-50 pt-3 group-hover:block ${open ? "block" : "hidden"}`}>
+      <div
+        id="about-menu"
+        className={`absolute top-full left-0 z-50 pt-3 transition-[opacity,translate,visibility] duration-200 ease-out motion-reduce:transition-none group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 ${open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"}`}
+      >
         <ul className="min-w-64 rounded-sm border-t-4 border-[#d9a441] bg-[#14213a] py-2 shadow-xl">
           {attorneys.map((a) => (
             <li key={a.slug}>
@@ -116,24 +119,38 @@ export function SiteHeader({ attorneys }: { attorneys: AttorneyLink[] }) {
           </button>
         </div>
       </div>
-      {menuOpen && (
-        <nav id="mobile-nav" className="border-t border-white/20 px-6 pb-6 xl:hidden" aria-label="Mobile navigation">
-          {nav.map(([h, l]) => (
-            <div key={h} className="border-b border-white/15">
-              <Link href={h} onClick={() => setMenuOpen(false)} className="block py-5 text-xl font-semibold">{l}</Link>
-              {h === "/about" && (
-                <ul className="-mt-2 mb-4 space-y-1 border-l-2 border-[#d9a441] pl-4">
-                  {attorneys.map((a) => (
-                    <li key={a.slug}>
-                      <Link href={`/about#${a.slug}`} onClick={() => setMenuOpen(false)} className="block py-2.5 text-lg text-white/85 hover:text-[#f0cf86]">{a.name}</Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
+      {/* Always rendered so it can animate; grid rows 0fr -> 1fr animates to the content's height. inert keeps closed links out of tab order. */}
+      <div
+        inert={!menuOpen}
+        className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none xl:hidden ${menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+      >
+        <nav
+          id="mobile-nav"
+          aria-label="Mobile navigation"
+          className={`min-h-0 overflow-hidden px-6 transition-[opacity,translate] duration-300 ease-out motion-reduce:transition-none ${menuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}`}
+        >
+          <div className="border-t border-white/20 pb-6">
+            {nav.map(([h, l], i) => (
+              <div
+                key={h}
+                style={{ transitionDelay: menuOpen ? `${75 + i * 40}ms` : "0ms" }}
+                className={`border-b border-white/15 transition-[opacity,translate] duration-300 ease-out motion-reduce:transition-none ${menuOpen ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}
+              >
+                <Link href={h} onClick={() => setMenuOpen(false)} className="block py-5 text-xl font-semibold">{l}</Link>
+                {h === "/about" && (
+                  <ul className="-mt-2 mb-4 space-y-1 border-l-2 border-[#d9a441] pl-4">
+                    {attorneys.map((a) => (
+                      <li key={a.slug}>
+                        <Link href={`/about#${a.slug}`} onClick={() => setMenuOpen(false)} className="block py-2.5 text-lg text-white/85 hover:text-[#f0cf86]">{a.name}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
         </nav>
-      )}
+      </div>
     </header>
   );
 }
