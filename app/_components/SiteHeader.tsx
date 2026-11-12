@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import logo from "@/app/assets/kottler-logo.png";
@@ -89,6 +90,16 @@ function AboutMenu({ label, attorneys }: { label: string; attorneys: AttorneyLin
 
 export function SiteHeader({ attorneys }: { attorneys: AttorneyLink[] }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  // The mobile menu sits inside the sticky header, so its height pushes the page down. When a link is
+  // tapped, collapse it instantly (no transition) and synchronously, so the anchor scroll that follows
+  // measures the final layout instead of landing past the target while the menu animates shut.
+  const [instantClose, setInstantClose] = useState(false);
+  const closeFromLink = () => {
+    flushSync(() => {
+      setInstantClose(true);
+      setMenuOpen(false);
+    });
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-[#101c32] text-white shadow-lg">
@@ -114,7 +125,10 @@ export function SiteHeader({ attorneys }: { attorneys: AttorneyLink[] }) {
             </span>
           </a>
           <Link href="/#contact" className="v2-btn v2-btn-gold hidden whitespace-nowrap !text-base tracking-wide uppercase lg:inline-flex xl:hidden">Free consultation</Link>
-          <button type="button" className="v2-btn border-2 border-white/60 px-5 xl:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="mobile-nav">
+          <button type="button" className="v2-btn border-2 border-white/60 px-5 xl:hidden" onClick={() => {
+              setInstantClose(false);
+              setMenuOpen(!menuOpen);
+            }} aria-expanded={menuOpen} aria-controls="mobile-nav">
             {menuOpen ? "Close" : "Menu"}
           </button>
         </div>
@@ -122,7 +136,7 @@ export function SiteHeader({ attorneys }: { attorneys: AttorneyLink[] }) {
       {/* Always rendered so it can animate; grid rows 0fr -> 1fr animates to the content's height. inert keeps closed links out of tab order. */}
       <div
         inert={!menuOpen}
-        className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none xl:hidden ${menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+        className={`grid xl:hidden ${instantClose ? "" : "transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"} ${menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
       >
         <nav
           id="mobile-nav"
@@ -136,12 +150,12 @@ export function SiteHeader({ attorneys }: { attorneys: AttorneyLink[] }) {
                 style={{ transitionDelay: menuOpen ? `${75 + i * 40}ms` : "0ms" }}
                 className={`border-b border-white/15 transition-[opacity,translate] duration-300 ease-out motion-reduce:transition-none ${menuOpen ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}
               >
-                <Link href={h} onClick={() => setMenuOpen(false)} className="block py-5 text-xl font-semibold">{l}</Link>
+                <Link href={h} onClick={closeFromLink} className="block py-5 text-xl font-semibold">{l}</Link>
                 {h === "/about" && (
                   <ul className="-mt-2 mb-4 space-y-1 border-l-2 border-[#d9a441] pl-4">
                     {attorneys.map((a) => (
                       <li key={a.slug}>
-                        <Link href={`/about#${a.slug}`} onClick={() => setMenuOpen(false)} className="block py-2.5 text-lg text-white/85 hover:text-[#f0cf86]">{a.name}</Link>
+                        <Link href={`/about#${a.slug}`} onClick={closeFromLink} className="block py-2.5 text-lg text-white/85 hover:text-[#f0cf86]">{a.name}</Link>
                       </li>
                     ))}
                   </ul>
