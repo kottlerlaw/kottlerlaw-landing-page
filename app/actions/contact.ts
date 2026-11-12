@@ -1,5 +1,9 @@
 'use server'
 
+import { after } from 'next/server'
+import { EMAIL_LOGO_PNG_BASE64 } from './email-logo'
+import { firmNotificationEmail, LOGO_CID, visitorConfirmationEmail } from './emails'
+
 export type ContactField = 'first' | 'last' | 'phone' | 'email' | 'message' | 'consent'
 
 export type ContactState = {
@@ -18,15 +22,6 @@ const GENERIC_ERROR = 'Something went wrong sending your request. Please call us
 function read(formData: FormData, key: string) {
   const value = formData.get(key)
   return typeof value === 'string' ? value.trim() : ''
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }
 
 // Microsoft Graph app-only token (client credentials), cached until shortly before it expires.
@@ -58,7 +53,25 @@ type GraphMessage = {
   subject: string
   body: { contentType: 'HTML'; content: string }
   toRecipients: { emailAddress: { address: string } }[]
-  replyTo: { emailAddress: { name: string; address: string } }[]
+  replyTo: { emailAddress: { name?: string; address: string } }[]
+  attachments: {
+    '@odata.type': '#microsoft.graph.fileAttachment'
+    name: string
+    contentType: string
+    contentBytes: string
+    isInline: true
+    contentId: string
+  }[]
+}
+
+// The logo travels as an inline (CID) attachment, so it shows without a hosted image URL.
+const LOGO_ATTACHMENT: GraphMessage['attachments'][number] = {
+  '@odata.type': '#microsoft.graph.fileAttachment',
+  name: 'kottler-logo.png',
+  contentType: 'image/png',
+  contentBytes: EMAIL_LOGO_PNG_BASE64,
+  isInline: true,
+  contentId: LOGO_CID,
 }
 
 // Sends through Graph. A 401 means the cached token was revoked (e.g. secret rotated),
@@ -113,26 +126,15 @@ export async function sendContactMessage(
   }
 
   const name = `${first} ${last}`
-  const rows: [string, string][] = [
-    ['Name', name],
-    ['Phone', phone],
-    ['Email', email || '—'],
-  ]
-  const body = message || '(No details provided)'
-
   const creds = { tenantId: MS_TENANT_ID, clientId: MS_CLIENT_ID, clientSecret: MS_CLIENT_SECRET }
   // CONTACT_TO may list several inboxes, separated by commas.
   const recipients = (CONTACT_TO || MAIL_FROM).split(',').map((s) => s.trim()).filter(Boolean)
   const mail: GraphMessage = {
     subject: `New case consultation request from ${name}`,
-    body: {
-      contentType: 'HTML',
-      content: `${rows.map(([k, v]) => `<p><strong>${k}:</strong> ${escapeHtml(v)}</p>`).join('')}
-<p><strong>What happened:</strong></p>
-<p style="white-space:pre-wrap">${escapeHtml(body)}</p>`,
-    },
+    body: { contentType: 'HTML', content: firmNotificationEmail(values) },
     toRecipients: recipients.map((address) => ({ emailAddress: { address } })),
     replyTo: email ? [{ emailAddress: { name, address: email } }] : [],
+    attachments: [LOGO_ATTACHMENT],
   }
 
   try {
@@ -148,6 +150,24 @@ export async function sendContactMessage(
     console.error('Contact form: failed to send email', err)
     return { status: 'error', message: GENERIC_ERROR, values }
   }
+
+  // The firm has the lead now. The visitor's confirmation is a courtesy, sent after the
+  // response so the form doesn't wait on it. A failure is only logged.
+  if (email) after(async () => {
+    try {
+      const res = await graphSendMail(creds, MAIL_FROM, {
+        subject: 'We received your request | Kottler & Kottler',
+        body: { contentType: 'HTML', content: visitorConfirmationEmail({ first }) },
+        toRecipients: [{ emailAddress: { address: email } }],
+        // Replies reach the firm's inbox rather than the sending mailbox.
+        replyTo: recipients.map((address) => ({ emailAddress: { address } })),
+        attachments: [LOGO_ATTACHMENT],
+      })
+      if (!res.ok) throw new Error(`Graph sendMail ${res.status}: ${await res.text()}`)
+    } catch (err) {
+      console.error('Contact form: failed to send confirmation email', err)
+    }
+  })
 
   return { status: 'success' }
 }
