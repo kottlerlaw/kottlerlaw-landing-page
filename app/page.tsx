@@ -14,7 +14,7 @@ import wrongfulDeathPhoto from "@/app/assets/practice-wrongful-death.jpg";
 import { LeadForm } from "./_components/LeadForm";
 import { SiteHeader } from "./_components/SiteHeader";
 import { SiteFooter, SiteTopBar } from "./_components/SiteFooter";
-import { attorneyNav, attorneys } from "./_components/attorneys";
+import { attorneys } from "./_components/attorneys";
 import { phoneDisplay, phoneHref, PhoneIcon } from "./_components/site";
 
 const wins = [
@@ -111,7 +111,7 @@ export default function Home() {
     <div className="v2 min-h-screen bg-white pb-20 text-[#14213a] md:pb-0">
       <SiteTopBar />
 
-      <SiteHeader attorneys={attorneyNav} />
+      <SiteHeader />
 
       <main id="top">
         {/* HERO */}

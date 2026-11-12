@@ -6,7 +6,7 @@ import officePhoto from "@/app/assets/office-conference-room.jpg";
 import { LeadForm } from "../_components/LeadForm";
 import { SiteHeader } from "../_components/SiteHeader";
 import { SiteFooter, SiteTopBar } from "../_components/SiteFooter";
-import { attorneyNav, attorneys, type Attorney } from "../_components/attorneys";
+import { attorneys, type Attorney } from "../_components/attorneys";
 import { phoneDisplay, phoneHref, PhoneIcon } from "../_components/site";
 
 export const metadata: Metadata = {
@@ -63,7 +63,7 @@ export default function AboutPage() {
   return (
     <div className="v2 min-h-screen bg-white pb-20 text-[#14213a] md:pb-0">
       <SiteTopBar />
-      <SiteHeader attorneys={attorneyNav} />
+      <SiteHeader />
 
       <main id="top">
         {/* HERO */}
