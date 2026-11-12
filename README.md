@@ -55,9 +55,9 @@ A Microsoft 365 admin sets up the app registration once:
 
 1. In the [Microsoft Entra admin center](https://entra.microsoft.com), go to **App registrations > New registration**. Name it (e.g. "Kottler website"), single tenant, no redirect URI.
 2. On the app's **Overview** page, copy the **Application (client) ID** (`MS_CLIENT_ID`) and **Directory (tenant) ID** (`MS_TENANT_ID`).
-3. Under **API permissions > Add a permission > Microsoft Graph > Application permissions**, add `Mail.Send`, then click **Grant admin consent**.
+3. Under **API permissions > Add a permission > Microsoft Graph > Application permissions**, add `Mail.Send` and `Mail.ReadWrite`, then click **Grant admin consent**. `Mail.ReadWrite` is optional: it lets the visitor's confirmation email go out as a reply to the lead, so both appear in one conversation in the firm's mailbox. Without it, the confirmation is sent as a separate email.
 4. Under **Certificates & secrets > New client secret**, create a secret and copy its **Value** right away (`MS_CLIENT_SECRET`). It is shown only once. Note the expiry date: the form stops sending when the secret expires, so set a reminder to rotate it.
-5. Limit the app to the sending mailbox. Without this, `Mail.Send` lets it send as any mailbox in the organization. In Exchange Online PowerShell:
+5. Limit the app to the sending mailbox. Without this, `Mail.Send` and `Mail.ReadWrite` let it send as, and read, any mailbox in the organization. In Exchange Online PowerShell:
 
    ```powershell
    New-ApplicationAccessPolicy -AppId <MS_CLIENT_ID> -PolicyScopeGroupId website@kottlerlaw.com -AccessRight RestrictAccess -Description "Kottler website contact form"

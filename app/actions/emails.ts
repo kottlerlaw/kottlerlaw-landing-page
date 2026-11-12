@@ -4,6 +4,10 @@
 
 export const LOGO_CID = 'kottler-logo'
 
+// Kept even when the confirmation is sent as a reply to the lead (which would default to
+// "RE: New case consultation request from ..."). Pending the client's confirmation.
+export const CONFIRMATION_SUBJECT = 'We received your request | Kottler & Kottler'
+
 const NAVY = '#101c32'
 const NAVY_DARK = '#0a1425'
 const INK = '#14213a'
