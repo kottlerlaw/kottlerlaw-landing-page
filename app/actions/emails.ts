@@ -128,7 +128,6 @@ export function visitorConfirmationEmail({ first }: Pick<Inquiry, 'first'>) {
     content: `${eyebrow('Free consultation')}
 ${heading(`Thank you, ${esc(first)}.`)}
 ${paragraph('We received your request. A member of our team will contact you shortly.')}
-${paragraph(`If it is urgent, call us at <a href="${PHONE_HREF}" style="color:${INK};font-weight:700;white-space:nowrap">${PHONE_DISPLAY}</a>.`)}
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-top:1px solid #e6e1d6;padding-top:12px">${checks}</table>
 ${button(PHONE_HREF, `Call ${PHONE_DISPLAY}`)}
 <p style="margin:28px 0 0;font-family:${SANS};font-size:13px;line-height:1.6;color:${BODY}">Submitting the form does not create an attorney-client relationship. You are receiving this email because this address was entered on our case consultation form. If that wasn't you, you can ignore this message.</p>`,
