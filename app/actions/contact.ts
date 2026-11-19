@@ -138,6 +138,7 @@ export async function sendContactMessage(
   }
 
   try {
+    console.info('Contact form: sending inquiry email', { from: MAIL_FROM, to: recipients })
     let res = await graphSendMail(creds, MAIL_FROM, mail)
     // Graph can reject a visitor address our regex accepted. Don't lose the lead over it:
     // send again without Reply-To (the address is still in the body).
@@ -146,6 +147,7 @@ export async function sendContactMessage(
       res = await graphSendMail(creds, MAIL_FROM, { ...mail, replyTo: [] })
     }
     if (!res.ok) throw new Error(`Graph sendMail ${res.status}: ${await res.text()}`)
+    console.info('Contact form: inquiry email accepted by Microsoft Graph', { status: res.status })
   } catch (err) {
     console.error('Contact form: failed to send email', err)
     return { status: 'error', message: GENERIC_ERROR, values }
@@ -155,6 +157,7 @@ export async function sendContactMessage(
   // response so the form doesn't wait on it. A failure is only logged.
   if (email) after(async () => {
     try {
+      console.info('Contact form: sending visitor confirmation email')
       const res = await graphSendMail(creds, MAIL_FROM, {
         subject: 'We received your request | Kottler & Kottler',
         body: { contentType: 'HTML', content: visitorConfirmationEmail({ first }) },
@@ -164,6 +167,7 @@ export async function sendContactMessage(
         attachments: [LOGO_ATTACHMENT],
       })
       if (!res.ok) throw new Error(`Graph sendMail ${res.status}: ${await res.text()}`)
+      console.info('Contact form: visitor confirmation accepted by Microsoft Graph', { status: res.status })
     } catch (err) {
       console.error('Contact form: failed to send confirmation email', err)
     }
