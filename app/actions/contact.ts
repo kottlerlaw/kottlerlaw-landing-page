@@ -157,7 +157,7 @@ export async function sendContactMessage(
   // response so the form doesn't wait on it. A failure is only logged.
   if (email) after(async () => {
     try {
-      console.info('Contact form: sending visitor confirmation email')
+      console.info('Contact form: sending visitor confirmation email', { from: MAIL_FROM, to: [email] })
       const res = await graphSendMail(creds, MAIL_FROM, {
         subject: 'We received your request | Kottler & Kottler',
         body: { contentType: 'HTML', content: visitorConfirmationEmail({ first }) },
